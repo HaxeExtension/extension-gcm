@@ -2,5 +2,6 @@
 <extension>
 	<section if="android">
 		<dependency name="gcmex" path="dependencies/gcmex" /> 
+		<dependency name="google-play-services_lib" path="dependencies/google-play-services_lib" />
 	</section>
 </extension>
