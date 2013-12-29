@@ -155,17 +155,15 @@ public class GCM extends Extension {
 
 
 	public static void sendMessage(String msg){
-		new AsyncTask<String,String,String>() {
+		Bundle data = new Bundle();
+		data.putString("msg", msg);
+		new AsyncTask<Bundle,Integer,String>() {
             @Override
-            protected String doInBackground(String... params) {
+            protected String doInBackground(Bundle... params) {
                 String msg = "";
                 try {
-                    Bundle data = new Bundle();
-                        data.putString("my_message", "Hello World");
-                        data.putString("my_action",
-                                "com.google.android.gcm.demo.app.ECHO_NOW");
                         String id = Integer.toString(msgId.incrementAndGet());
-                        gcm.send(SENDER_ID + "@gcm.googleapis.com", id, data);
+                        gcm.send(SENDER_ID + "@gcm.googleapis.com", id, params[0]);
                         msg = "Sent message";
                 } catch (IOException ex) {
                     msg = "Error :" + ex.getMessage();
@@ -177,7 +175,8 @@ public class GCM extends Extension {
             protected void onPostExecute(String msg) {
 	            Log.i(TAG, "MSGSEND - POSTEXEC: "+msg);
             }
-        }.execute(null, null, null);
+        }.execute(data);
+	}
 	}
 
 }

@@ -54,12 +54,11 @@ public class GcmIntentService extends IntentService {
         if (!extras.isEmpty()) {  // has effect of unparcelling Bundle
             String messageType = gcm.getMessageType(intent);
             if (GoogleCloudMessaging.MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
-                Log.i(TAG, "SEND ERROR: " + extras.toString());
+                GCM.receiveMessage("MESSAGE_TYPE_SEND_ERROR",extras);
             }else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED.equals(messageType)) {
-                Log.i(TAG, "MESSAGES DELETED ON SERVER: " + extras.toString());
+                GCM.receiveMessage("MESSAGE_TYPE_DELETED",extras);
             }else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) {
-                // If it's a regular GCM message, do some work.
-                Log.i(TAG, "Received: " + extras.toString());
+                GCM.receiveMessage("MESSAGE_TYPE_MESSAGE",extras);
             }
         }
         // Release the wake lock provided by the WakefulBroadcastReceiver.
