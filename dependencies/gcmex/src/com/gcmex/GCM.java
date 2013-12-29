@@ -33,6 +33,19 @@ import org.haxe.lime.HaxeObject;
 import com.google.gson.reflect.TypeToken;
 
 public class GCM extends Extension {
+	public static final String EXTRA_MESSAGE = "message";
+	public static final String PROPERTY_REG_ID = "registration_id";
+	private static final String PROPERTY_APP_VERSION = "appVersion";
+	private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+	private static final String TAG = "OPENFL-GCM";
+	private static String SENDER_ID = "MUST CALL INIT TO SET SENDER ID!";
+	private static HaxeObject callbackObject=null;
+
+	private static GoogleCloudMessaging gcm = null;
+	private static AtomicInteger msgId = new AtomicInteger();
+	private static SharedPreferences prefs;
+	private static String regid;
+	private static int currentAppVersion=0;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,24 +84,52 @@ public class GCM extends Extension {
 		}
 	}
 
+	public static void sendMessage(String json){
+		try{
+			Bundle data = new Bundle();
+			HashMap<String,String> h=(new Gson()).fromJson(json,new TypeToken<HashMap<String, String>>() {}.getType());
+			for(String key : h.keySet()){
+				data.putString(key, h.get(key));
+			}
+			new AsyncTask<Bundle,Integer,String>() {
+	            @Override
+	            protected String doInBackground(Bundle... params) {
+	                String msg = "";
+	                try {
+                        String id = Integer.toString(msgId.incrementAndGet());
+                        gcm.send(SENDER_ID + "@gcm.googleapis.com", id, params[0]);
+                        msg = "Sent message";
+	                } catch (IOException ex) {
+	                    msg = "Error :" + ex.getMessage();
+	                }
+	                return msg;
+	            }
+
+	            @Override
+	            protected void onPostExecute(String msg) {
+		            Log.i(TAG, "MSGSEND - POSTEXEC: "+msg);
+	            }
+	        }.execute(data);
+	    }catch(Exception e){
+	        Log.i(TAG, "ERROR: "+e.getMessage());	    	
+	    }
+	}
+
+	public static void receiveMessage(String type,Bundle data){
+		try{
+			HashMap<String,String> h=new HashMap<String,String>();
+			for(String key : data.keySet()){
+				h.put(key,data.getString(key));
+			}
+			String json = (new Gson()).toJson(h);
+	        callbackObject.call2("receiveCallback", type, json);
+	    }catch(Exception e){
+	        Log.i(TAG, "ERROR: "+e.getMessage());	    	
+	    }
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-	public static final String EXTRA_MESSAGE = "message";
-	public static final String PROPERTY_REG_ID = "registration_id";
-	private static final String PROPERTY_APP_VERSION = "appVersion";
-	private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-	private static final String TAG = "OPENFL-GCM";
-	private static String SENDER_ID = "MUST CALL INIT TO SET SENDER ID!";
-	private static HaxeObject callbackObject=null;
-
-	static GoogleCloudMessaging gcm = null;
-	static AtomicInteger msgId = new AtomicInteger();
-	static SharedPreferences prefs;
-	static Context context;
-	static String regid;
-	static int currentAppVersion=0;
 
 	private static void registerInBackground() {
 		Log.i(TAG, "registerInBackground. SenderID: "+SENDER_ID);
@@ -99,12 +140,12 @@ public class GCM extends Extension {
 	            String msg = "";
 	            try {
 	                if (gcm == null) {
-	                    gcm = GoogleCloudMessaging.getInstance(context);
+	                    gcm = GoogleCloudMessaging.getInstance(mainContext);
 	                }
 	                regid = gcm.register(SENDER_ID);
 	                msg = "Device registered, registration ID=" + regid;
 					// Persist the regID - no need to register again.
-	                storeRegistrationId(context, regid);
+	                storeRegistrationId(mainContext, regid);
 	            } catch (IOException ex) {
 					msg = "Error :" + ex.getMessage();
 	            }
@@ -157,45 +198,6 @@ public class GCM extends Extension {
 		} catch (Exception e) {
 			Log.i(TAG, "Could not get package version: " + e);
 		}
-	}
-
-
-	public static void sendMessage(String json){
-		Bundle data = new Bundle();
-		HashMap<String,String> h=(new Gson()).fromJson(json,new TypeToken<HashMap<String, String>>() {}.getType());
-		for(String key : h.keySet()){
-			data.putString(key, h.get(key));
-            Log.i(TAG, "KEY: "+key+ " - VALUE: "+h.get(key));			
-		}
-		new AsyncTask<Bundle,Integer,String>() {
-            @Override
-            protected String doInBackground(Bundle... params) {
-                String msg = "";
-                try {
-                        String id = Integer.toString(msgId.incrementAndGet());
-                        gcm.send(SENDER_ID + "@gcm.googleapis.com", id, params[0]);
-                        msg = "Sent message";
-                } catch (IOException ex) {
-                    msg = "Error :" + ex.getMessage();
-                }
-                return msg;
-            }
-
-            @Override
-            protected void onPostExecute(String msg) {
-	            Log.i(TAG, "MSGSEND - POSTEXEC: "+msg);
-            }
-        }.execute(data);
-	}
-
-	public static void receiveMessage(String type,Bundle data){
-		HashMap<String,String> h=new HashMap<String,String>();
-		for(String key : data.keySet()){
-			h.put(key,data.getString(key));
-		}
-        Log.i(TAG, "RECEIVED! JAVA : "+h.toString());
-		String json = (new Gson()).toJson(h);
-        callbackObject.call2("receiveCallback", type, json);
 	}
 
 }
