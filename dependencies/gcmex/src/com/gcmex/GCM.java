@@ -27,6 +27,10 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import org.haxe.extension.Extension;
+import com.google.gson.Gson;
+import java.util.HashMap;
+import org.haxe.lime.HaxeObject;
+import com.google.gson.reflect.TypeToken;
 
 public class GCM extends Extension {
 
@@ -53,9 +57,10 @@ public class GCM extends Extension {
 		return getRegistrationId(mainContext);
 	}
 
-	public static void init(String senderId){
+	public static void init(String senderId, HaxeObject callback){
 		SENDER_ID=senderId;
 		if(gcm==null){
+			callbackObject=callback;
 			getAppVersion(mainContext);
 			Log.i(TAG, "CREATE GCM INSTANCE.");
 			gcm = GoogleCloudMessaging.getInstance(mainActivity);
@@ -76,6 +81,7 @@ public class GCM extends Extension {
 	private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 	private static final String TAG = "OPENFL-GCM";
 	private static String SENDER_ID = "MUST CALL INIT TO SET SENDER ID!";
+	private static HaxeObject callbackObject=null;
 
 	static GoogleCloudMessaging gcm = null;
 	static AtomicInteger msgId = new AtomicInteger();
@@ -154,9 +160,13 @@ public class GCM extends Extension {
 	}
 
 
-	public static void sendMessage(String msg){
+	public static void sendMessage(String json){
 		Bundle data = new Bundle();
-		data.putString("msg", msg);
+		HashMap<String,String> h=(new Gson()).fromJson(json,new TypeToken<HashMap<String, String>>() {}.getType());
+		for(String key : h.keySet()){
+			data.putString(key, h.get(key));
+            Log.i(TAG, "KEY: "+key+ " - VALUE: "+h.get(key));			
+		}
 		new AsyncTask<Bundle,Integer,String>() {
             @Override
             protected String doInBackground(Bundle... params) {
@@ -177,6 +187,15 @@ public class GCM extends Extension {
             }
         }.execute(data);
 	}
+
+	public static void receiveMessage(String type,Bundle data){
+		HashMap<String,String> h=new HashMap<String,String>();
+		for(String key : data.keySet()){
+			h.put(key,data.getString(key));
+		}
+        Log.i(TAG, "RECEIVED! JAVA : "+h.toString());
+		String json = (new Gson()).toJson(h);
+        callbackObject.call2("receiveCallback", type, json);
 	}
 
 }
