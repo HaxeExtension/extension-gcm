@@ -1,4 +1,4 @@
-package gcmex;
+package com.gcmex;
 import java.util.Date;
 import java.util.Queue;
 import android.net.ConnectivityManager;
@@ -75,7 +75,6 @@ public class GCM extends Extension {
 	private static final String PROPERTY_APP_VERSION = "appVersion";
 	private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 	private static final String TAG = "OPENFL-GCM";
-
 	private static String SENDER_ID = "MUST CALL INIT TO SET SENDER ID!";
 
 	static GoogleCloudMessaging gcm = null;
@@ -180,6 +179,5 @@ public class GCM extends Extension {
             }
         }.execute(null, null, null);
 	}
-
 
 }
