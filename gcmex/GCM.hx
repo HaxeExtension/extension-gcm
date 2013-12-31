@@ -10,7 +10,7 @@ class GCM {
 
 	public static var getRegistrationId(default,null):Void->String=
 	#if android
-		openfl.utils.JNI.createStaticMethod("com/gcmex/GCM", "getRegistrationId_Static", "()Ljava/lang/String;");
+		openfl.utils.JNI.createStaticMethod("com/gcmex/GCM", "getRegistrationId", "()Ljava/lang/String;");
 	#else
 		function():String{return null;}
 	#end

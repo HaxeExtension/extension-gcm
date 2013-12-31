@@ -46,6 +46,7 @@ public class GCM extends Extension {
 	private static SharedPreferences prefs;
 	private static String regid;
 	private static int currentAppVersion=0;
+	private static Boolean successfulInit=false;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,25 +67,31 @@ public class GCM extends Extension {
 		}
 	}
 
-	public static String getRegistrationId_Static() {
-		return getRegistrationId(mainContext);
-	}
-
 	public static void init(String senderId, HaxeObject callback){
-		SENDER_ID=senderId;
-		if(gcm==null){
-			callbackObject=callback;
-			getAppVersion(mainContext);
-			Log.i(TAG, "CREATE GCM INSTANCE.");
-			gcm = GoogleCloudMessaging.getInstance(mainActivity);
-			regid = getRegistrationId(mainContext);
-			if (regid.isEmpty()) {
-				registerInBackground();
+		try{
+			SENDER_ID=senderId;
+			if(gcm==null){
+				callbackObject=callback;
+				getAppVersion(mainContext);
+				Log.i(TAG, "CREATE GCM INSTANCE.");
+				gcm = GoogleCloudMessaging.getInstance(mainActivity);
+				regid = getRegistrationId();
+				if (regid.isEmpty()) {
+					registerInBackground();
+				}
+				successfulInit = checkPlayServices();
 			}
-		}
+	    }catch(Exception e){
+	        Log.i(TAG, "ERROR: init - "+e.getMessage());	    	
+	    }
 	}
 
 	public static void sendMessage(String json){
+		if(!successfulInit){
+			if(!SENDER_ID.equals("MUST CALL INIT TO SET SENDER ID!")) Log.i(TAG, "sendMessage: can't send message. Init FAILED!");
+			else Log.i(TAG, "sendMessage: can't send message. Call init first!");
+			return;
+		}
 		try{
 			Bundle data = new Bundle();
 			HashMap<String,String> h=(new Gson()).fromJson(json,new TypeToken<HashMap<String, String>>() {}.getType());
@@ -111,7 +118,7 @@ public class GCM extends Extension {
 	            }
 	        }.execute(data);
 	    }catch(Exception e){
-	        Log.i(TAG, "ERROR: "+e.getMessage());	    	
+	        Log.i(TAG, "ERROR: sendMessage - "+e.getMessage());	    	
 	    }
 	}
 
@@ -124,8 +131,26 @@ public class GCM extends Extension {
 			String json = (new Gson()).toJson(h);
 	        callbackObject.call2("receiveCallback", type, json);
 	    }catch(Exception e){
-	        Log.i(TAG, "ERROR: "+e.getMessage());	    	
+	        Log.i(TAG, "ERROR: receiveMessage - "+e.getMessage());	    	
 	    }
+	}
+
+	public static String getRegistrationId() {
+	    final SharedPreferences prefs = getGCMPreferences(mainContext);
+	    String registrationId = prefs.getString(PROPERTY_REG_ID, "");
+	    if (registrationId.isEmpty()) {
+	        Log.i(TAG, "Registration not found.");
+	        return "";
+	    }
+		// Check if app was updated; if so, it must clear the registration ID
+		// since the existing regID is not guaranteed to work with the new
+		// app version.
+	    int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
+	    if (registeredVersion != currentAppVersion) {
+	        Log.i(TAG, "App version changed. Current: "+currentAppVersion+" - registeredVersion: "+registeredVersion);
+	        return "";
+	    }
+	    return registrationId;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,24 +182,6 @@ public class GCM extends Extension {
 				Log.i(TAG, "POSTEXEC: "+msg);
 	        }
 	    }.execute(null, null, null);
-	}
-
-	private static String getRegistrationId(Context context) {
-	    final SharedPreferences prefs = getGCMPreferences(context);
-	    String registrationId = prefs.getString(PROPERTY_REG_ID, "");
-	    if (registrationId.isEmpty()) {
-	        Log.i(TAG, "Registration not found.");
-	        return "";
-	    }
-		// Check if app was updated; if so, it must clear the registration ID
-		// since the existing regID is not guaranteed to work with the new
-		// app version.
-	    int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
-	    if (registeredVersion != currentAppVersion) {
-	        Log.i(TAG, "App version changed. Current: "+currentAppVersion+" - registeredVersion: "+registeredVersion);
-	        return "";
-	    }
-	    return registrationId;
 	}
 
 	private static SharedPreferences getGCMPreferences(Context context) {
