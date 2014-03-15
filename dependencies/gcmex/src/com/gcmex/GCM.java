@@ -37,7 +37,7 @@ public class GCM extends Extension {
 	public static final String PROPERTY_REG_ID = "registration_id";
 	private static final String PROPERTY_APP_VERSION = "appVersion";
 	private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-	private static final String TAG = "OPENFL-GCM";
+	public static final String TAG = "OPENFL-GCS";
 	private static String SENDER_ID = "MUST CALL INIT TO SET SENDER ID!";
 	private static HaxeObject callbackObject=null;
 
@@ -82,11 +82,13 @@ public class GCM extends Extension {
 				successfulInit = checkPlayServices();
 			}
 	    }catch(Exception e){
-	        Log.i(TAG, "ERROR: init - "+e.getMessage());	    	
+	        Log.i(TAG, "ERROR: init - "+e.getMessage());
 	    }
+		PlayGames.getInstance().init(mainActivity);
 	}
 
 	public static void sendMessage(String json){
+		PlayGames.getInstance().useLeaderBoard();
 		if(!successfulInit){
 			if(!SENDER_ID.equals("MUST CALL INIT TO SET SENDER ID!")) Log.i(TAG, "sendMessage: can't send message. Init FAILED!");
 			else Log.i(TAG, "sendMessage: can't send message. Call init first!");
