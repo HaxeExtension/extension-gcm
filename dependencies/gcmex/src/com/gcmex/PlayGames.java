@@ -24,13 +24,7 @@ public class PlayGames implements GameHelper.GameHelperListener {
 
 	public void init(Activity mainActivity){
 		if(mHelper!=null){
-			if(!mHelper.isSignedIn()){
-	        	Log.i(GCM.TAG, "PlayGames: SIGN OUT CALL");
-				mHelper.beginUserInitiatedSignIn();
-			}else{
-	        	Log.i(GCM.TAG, "PlayGames: SIGN OUT CALL");
-				mHelper.signOut();
-			}
+        	Log.i(GCM.TAG, "PlayGames: WONT INIT TWICE");
 			return;
 		}
 
@@ -95,34 +89,5 @@ public class PlayGames implements GameHelper.GameHelperListener {
     public void onSignInSucceeded() {
         Log.i(GCM.TAG, "PlayGames: onSignInSucceeded");
     }
-
-/*
-	@Override
-    public void onConnected(Bundle connectionHint) {
-        Log.i(GCM.TAG, "onConnected: connected!");
-        if (connectionHint != null) {
-            Log.i(GCM.TAG, "onConnected: connection hint provided. Maybe was an invitation?");
-        }
-        connected=true;
-    }
-
-    @Override
-    public void onConnectionSuspended(int cause) {
-        Log.i(GCM.TAG, "onConnectionSuspended, cause=" + cause);
-        connected=false;
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult result) {
-        // save connection result for later reference
-        Log.i(GCM.TAG, "onConnectionFailed");
-        connected=false;
-
-        Log.i(GCM.TAG, "Connection failure:");
-        Log.i(GCM.TAG, "   - code: " + GameHelperUtils.errorCodeToString(result.getErrorCode()));
-        Log.i(GCM.TAG, "   - resolvable: " + result.hasResolution());
-        Log.i(GCM.TAG, "   - details: " + result.toString());
-    }
-*/
 
 }
