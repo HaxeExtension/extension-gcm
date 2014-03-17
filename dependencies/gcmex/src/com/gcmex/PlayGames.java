@@ -24,8 +24,8 @@ public class PlayGames implements GameHelper.GameHelperListener {
 
 	public void init(Activity mainActivity){
 		if(mHelper!=null){
-        	Log.i(GCM.TAG, "PlayGames: WONT INIT TWICE");
-			return;
+			if(!mHelper.isConnecting()) return;
+			mHelper=null;
 		}
 
 		mActivity=mainActivity;
@@ -77,7 +77,15 @@ public class PlayGames implements GameHelper.GameHelperListener {
 	}
 
 	public void displayLeaderBoard(String id){
-		mActivity.startActivityForResult(Games.Leaderboards.getLeaderboardIntent(mHelper.mGoogleApiClient, id), 0);
+		try {
+			mActivity.startActivityForResult(Games.Leaderboards.getLeaderboardIntent(mHelper.mGoogleApiClient, id), 0);
+		} catch (Exception e) {
+			// Try connecting again
+			Log.i(GCM.TAG, "PlayGames: displayLeaderBoard Exception ");
+			Log.i(GCM.TAG, e.toString());//.getMessage());
+			mHelper=null;
+			this.init(mActivity);
+		}
 	}
 
 	@Override
