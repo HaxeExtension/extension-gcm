@@ -168,15 +168,10 @@ public class GameHelper implements GoogleApiClient.ConnectionCallbacks,
      *                     or CLIENT_ALL to mean all clients).
      */
     public GameHelper(Activity activity, int clientsToUse) {
-        mDebugLog=true;
-        debugLog("Construct: activity " + clientsToUse);
         mActivity = activity;
         mAppContext = activity.getApplicationContext();
-        debugLog("Construct: step 1");
         mRequestedClients = clientsToUse;
-        debugLog("Construct: step 2");
         mHandler = new Handler();
-        debugLog("Construct: step 3");
     }
 
     /**
@@ -759,7 +754,7 @@ public class GameHelper implements GoogleApiClient.ConnectionCallbacks,
                 // sign-in flow)
                 mExpectingResolution = true;
                 mConnectionResult.startResolutionForResult(mActivity, RC_RESOLVE);
-            } catch (Exception e) {
+            } catch (SendIntentException e) {
                 // Try connecting again
                 debugLog("SendIntentException, so connecting again.");
                 connect();

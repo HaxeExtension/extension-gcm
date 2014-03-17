@@ -14,7 +14,6 @@ import com.google.android.gms.common.ConnectionResult;
 public class PlayGames implements GameHelper.GameHelperListener {
 	
 	private static PlayGames instance=null;
-	private GoogleApiClient mClient=null;
 	private static Activity mActivity=null;
 	private static GameHelper mHelper=null;
 
@@ -25,25 +24,32 @@ public class PlayGames implements GameHelper.GameHelperListener {
 
 	public void init(Activity mainActivity){
 		if(mHelper!=null){
-	        Log.i(GCM.TAG, "PlayGames: SIGN OUT CALL");
-			mHelper.signOut();
+			if(!mHelper.isSignedIn()){
+	        	Log.i(GCM.TAG, "PlayGames: SIGN OUT CALL");
+				mHelper.beginUserInitiatedSignIn();
+			}else{
+	        	Log.i(GCM.TAG, "PlayGames: SIGN OUT CALL");
+				mHelper.signOut();
+			}
 			return;
 		}
 
 		mActivity=mainActivity;
 		mActivity.runOnUiThread(new Runnable() {
-                public void run() { 
-			        Log.i(GCM.TAG, "PlayGames: INIT CALL");
-					mHelper = new GameHelper(mActivity, GameHelper.CLIENT_GAMES);
-					getInstance().connect();
-			        Log.i(GCM.TAG, "PlayGames: INIT COMPLETE");
-                }
+            public void run() { 
+		        Log.i(GCM.TAG, "PlayGames: INIT CALL");
+				mHelper = new GameHelper(mActivity, GameHelper.CLIENT_GAMES);
+				mHelper.enableDebugLog(true);
+				mHelper.setup(PlayGames.getInstance());
+				mHelper.setMaxAutoSignInAttempts(3);
+				mHelper.onStart(mActivity);
+				Log.i(GCM.TAG, "PlayGames: INIT COMPLETE");
+            }
         });
 	}	
 
 	public void connect(){
         Log.i(GCM.TAG, "PlayGames: CONNECT begin");
-
 		if(mHelper.isSignedIn()){
 	        Log.i(GCM.TAG, "PlayGames: - CONNECT - Doing nothing... Already SignedIn");
 			return;
@@ -52,28 +58,33 @@ public class PlayGames implements GameHelper.GameHelperListener {
 	        Log.i(GCM.TAG, "PlayGames: - CONNECT - Doing nothing... Still connecting");
 			return;
 		}
-	    mHelper.setup(this);
-//	    mHelper.connect();
-	    mHelper.onStart(mActivity);
-//	    mHelper.beginUserInitiatedSignIn();
+	    mHelper.beginUserInitiatedSignIn();
         Log.i(GCM.TAG, "PlayGames: CONNECT complete");
      }
 
 	public void useLeaderBoard(){
+		if(mHelper==null){
+	        Log.i(GCM.TAG, "PlayGames: useLeaderBoard - YOU MUST CALL INIT FIRST!");
+			return;
+		}
 		if(mHelper.isConnecting()){
 	        Log.i(GCM.TAG, "PlayGames: useLeaderBoard - WAIT... Still connecting!");
 			return;
 		}
 		if(!mHelper.isSignedIn()){
-	        Log.i(GCM.TAG, "PlayGames: useLeaderBoard - Signing IN!");
-			mHelper.beginUserInitiatedSignIn();
+	        Log.i(GCM.TAG, "PlayGames: useLeaderBoard - Not signed in!");
+	        connect();
 			return;
 		}
-        Log.i(GCM.TAG, "PlayGames: useLeaderBoard begin");
-		Games.Leaderboards.submitScore(mClient, "111", 1337);
+        Log.i(GCM.TAG, "PlayGames: useLeaderBoard begin!");
+//		Games.Leaderboards.submitScore(mHelper.mGoogleApiClient, "CgkIuqzAj8EdEAIQAQ", 12);
+        displayLeaderBoard("CgkIuqzAj8EdEAIQAQ");
         Log.i(GCM.TAG, "PlayGames: useLeaderBoard complete");
 	}
 
+	public void displayLeaderBoard(String id){
+		mActivity.startActivityForResult(Games.Leaderboards.getLeaderboardIntent(mHelper.mGoogleApiClient, id), 0);
+	}
 
 	@Override
     public void onSignInFailed() {
