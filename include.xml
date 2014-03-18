@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension>
 	<section if="android">
+		<haxelib name="openfl-gps-lib" /> 
 		<dependency name="gcmex" path="dependencies/gcmex" /> 
-		<dependency name="google-play-services_lib" path="dependencies/google-play-services_lib" />
 	</section>
 </extension>

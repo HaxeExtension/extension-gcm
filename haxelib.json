@@ -5,6 +5,9 @@
         "contributors":["fbricker"],
         "tags": ["social","api","google cloud message","gcm","push","openfl"],
         "description": "OpenFL GCM extension for Android.",
-        "version": "0.0.1",
+        "dependencies": {
+		    "openfl-gps-lib": ""
+		},
+		"version": "0.0.1",
         "releasenote": "First release."
 }
