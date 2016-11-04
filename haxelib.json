@@ -1,13 +1,13 @@
 {
-        "name": "openfl-gcm",
-        "url": "",
-        "license": "",
-        "contributors":["fbricker"],
-        "tags": ["social","api","google cloud message","gcm","push","openfl"],
-        "description": "OpenFL GCM extension for Android.",
-        "dependencies": {
-		    "openfl-gps-lib": ""
-		},
-		"version": "0.0.1",
-        "releasenote": "First release."
+	"name": "extension-gcm",
+	"url": "https://github.com/fbricker/extension-gcm",
+	"license": "MIT",
+	"contributors":["fbricker"],
+	"tags": ["social","api","google cloud message","gcm","push","openfl"],
+	"description": "OpenFL GCM extension for Android.",
+	"dependencies": {
+		"extension-googleplayservices-lib": ""
+	},
+	"version": "0.0.1",
+	"releasenote": "First release."
 }
