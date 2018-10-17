@@ -1,30 +1,38 @@
 package gcmex;
 
+#if android
+	#if (openfl < "4.0.0")
+	import openfl.utils.JNI;
+	#else
+	import lime.system.JNI;
+	#end
+#end
+
 class GCM {
 	public static var checkPlayServices(default,null):Void->Bool=
 	#if android
-		openfl.utils.JNI.createStaticMethod("com/gcmex/GCM", "checkPlayServices", "()Z");
+		JNI.createStaticMethod("com/gcmex/GCM", "checkPlayServices", "()Z");
 	#else
 		function():Bool{return false;}
 	#end
 
 	public static var getRegistrationId(default,null):Void->String=
 	#if android
-		openfl.utils.JNI.createStaticMethod("com/gcmex/GCM", "getRegistrationId", "()Ljava/lang/String;");
+		JNI.createStaticMethod("com/gcmex/GCM", "getRegistrationId", "()Ljava/lang/String;");
 	#else
 		function():String{return null;}
 	#end
 
 	private static var realInit(default,null):String->Dynamic->Void=
 	#if android
-		openfl.utils.JNI.createStaticMethod("com/gcmex/GCM", "init", "(Ljava/lang/String;Lorg/haxe/lime/HaxeObject;)V");
+		JNI.createStaticMethod("com/gcmex/GCM", "init", "(Ljava/lang/String;Lorg/haxe/lime/HaxeObject;)V");
 	#else
 		function(senderId:String,callback:Dynamic):Void{}
 	#end
 
 	public static var sendMessage(default,null):String->Void=
 	#if android
-		openfl.utils.JNI.createStaticMethod("com/gcmex/GCM", "sendMessage", "(Ljava/lang/String;)V");
+		JNI.createStaticMethod("com/gcmex/GCM", "sendMessage", "(Ljava/lang/String;)V");
 	#else
 		function(msg:String):Void{}
 	#end
